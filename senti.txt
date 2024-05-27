@@ -1,0 +1,71 @@
+% Sentiment categories
+sentiment(positive).
+sentiment(negative).
+sentiment(neutral).
+% Positive words
+positive_word(happy).
+positive_word(good).
+positive_word(great).
+positive_word(excellent).
+positive_word(love).
+
+% Negative words
+negative_word(sad).
+negative_word(bad).
+negative_word(terrible).
+negative_word(hate).
+negative_word(awful).
+
+% Neutral words (optional)
+neutral_word(okay).
+neutral_word(fine).
+neutral_word(average).
+% Rule to count positive words in a list
+count_positive([], 0).
+count_positive([H|T], Count) :-
+    positive_word(H),
+    count_positive(T, Count1),
+    Count is Count1 + 1.
+count_positive([H|T], Count) :-
+    \+ positive_word(H),
+    count_positive(T, Count).
+
+% Rule to count negative words in a list
+count_negative([], 0).
+count_negative([H|T], Count) :-
+    negative_word(H),
+    count_negative(T, Count1),
+    Count is Count1 + 1.
+count_negative([H|T], Count) :-
+    \+ negative_word(H),
+    count_negative(T, Count).
+
+% Rule to determine the sentiment of a list of words
+analyze_sentiment(Words, positive) :-
+    count_positive(Words, PosCount),
+    count_negative(Words, NegCount),
+    PosCount > NegCount.
+analyze_sentiment(Words, negative) :-
+    count_positive(Words, PosCount),
+    count_negative(Words, NegCount),
+    PosCount < NegCount.
+analyze_sentiment(Words, neutral) :-
+    count_positive(Words, PosCount),
+    count_negative(Words, NegCount),
+    PosCount =:= NegCount.
+% Simple tokenizer (splits by spaces)
+tokenize(Text, Words) :-
+    split_string(Text, " ", "", WordStrings),
+    maplist(atom_string, Words, WordStrings).
+% Main predicate to analyze sentiment of text
+sentiment_analysis(Text, Sentiment) :-
+    tokenize(Text, Words),
+    analyze_sentiment(Words, Sentiment).
+?- sentiment_analysis("I love this excellent product", Sentiment).
+Sentiment = positive.
+
+?- sentiment_analysis("This is a terrible and awful day", Sentiment).
+Sentiment = negative.
+
+?- sentiment_analysis("The day is fine and average", Sentiment).
+Sentiment = neutral.
